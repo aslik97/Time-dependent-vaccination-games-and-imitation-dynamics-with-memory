@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/Users/aslihankullelioglu/opt/anaconda3"
+    "python.pythonPath": "/Users/aslihankullelioglu/opt/anaconda3",
+    "python.linting.pylintEnabled": false
 }
