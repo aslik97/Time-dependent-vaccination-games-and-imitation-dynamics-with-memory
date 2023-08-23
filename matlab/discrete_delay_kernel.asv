@@ -1,0 +1,36 @@
+
+
+% Define parameters
+mu = 3.9*exp(-5);     % Your parameter values
+v = 1/7;
+beta = 10 * (mu + v);
+alpha = 0.002;
+k = 0.1:0.1:100;
+tau_0 = 2;  % Constant delay
+
+% Endemic steady state values
+E3_S = (mu + v) / beta;
+E3_I = (mu * alpha * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
+E3_p = (mu * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
+
+% Calculate Jacobian matrix and eigenvalues
+Jacobian = [...
+    -beta * E3_I - mu,             -beta * E3_S,            -mu;
+    beta * E3_I,                   beta * E3_S - mu - v,     0;
+          0,                       k * E3_p*(1 - E3_p), (1 - alpha * E3_p),            0
+    ];
+
+eigenvalues = eig(Jacobian);
+
+% Plot the regions of stability and instability
+figure;
+plot(real(eigenvalues), imag(eigenvalues), 'o');
+hold on;
+plot(0, 0, 'rx'); % Indicate the origin (unstable)
+xlabel('Real Part');
+ylabel('Imaginary Part');
+title('Stability Analysis');
+grid on;
+
+% Customize the plot as needed
+
