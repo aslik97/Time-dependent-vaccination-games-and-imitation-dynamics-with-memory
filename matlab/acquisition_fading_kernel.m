@@ -6,8 +6,8 @@ alpha = 0.002;
 tau_0 = 2;
 
 % Define the range of k and tau values
-k_values = 0.1:0.1:500;
-tau_values = 0.1:0.1:300;
+k_values = 0.1:0.1:10;
+tau_values = 0.1:0.1:10;
 
 % Initialize stability matrix
 stability_matrix = zeros(length(k_values), length(tau_values));
