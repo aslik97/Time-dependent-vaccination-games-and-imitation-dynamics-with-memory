@@ -31,11 +31,9 @@ for i = 1:length(k_values)
         E3_p = (mu * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
 
         % Calculate characteristic equation coefficients
-        a = k * mu * beta * E3_p * (1 - E3_p) * E3_I; 
-        b = k * alpha * E3_p * (1 - E3_p) * Lg(1i) + 1i;
-        c = [1, (mu + beta * E3_I), beta^2 + E3_S * E3_I];
-
-        d = a + b * c;
+        a = k * beta * E3_p * (1 - E3_p) * E3_I * (mu + alpha * beta * E3_S); 
+        b = k * alpha * E3_p * (1 - E3_p) * ;β2S∗I∗ + kαp∗(1 − p∗)(μ + βI∗)
+        c = [1, (mu + beta * E3_I), beta^2 + E3_S * E3_I];μ + βI∗ + kαp∗(1 − p∗)
 
         % Calculate eigenvalues of the characteristic equation
         eigenvalues = roots(c);

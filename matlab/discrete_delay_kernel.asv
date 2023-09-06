@@ -1,36 +1,61 @@
 
 
 % Define parameters
-mu = 3.9*exp(-5);     % Your parameter values
+mu = 3.9 * exp(-5);
 v = 1/7;
 beta = 10 * (mu + v);
 alpha = 0.002;
-k = 0.1:0.1:100;
-tau_0 = 2;  % Constant delay
+tau_0 = 2;
 
-% Endemic steady state values
-E3_S = (mu + v) / beta;
-E3_I = (mu * alpha * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
-E3_p = (mu * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
+% Define the Laplace transform of the kernel
+% Lg = @(lambda) exp(-lambda * tau_0);
 
-% Calculate Jacobian matrix and eigenvalues
-Jacobian = [...
-    -beta * E3_I - mu,             -beta * E3_S,            -mu;
-    beta * E3_I,                   beta * E3_S - mu - v,     0;
-          0,                       k * E3_p*(1 - E3_p), (1 - alpha * E3_p),            0
-    ];
+% Define the range of k and tau values
+k_values = 0.1:0.1:10;
+tau_values = 0.1:0.1:1;
 
-eigenvalues = eig(Jacobian);
+% Initialize stability matrix
+stability_matrix = zeros(length(k_values), length(tau_values));
 
+for i = 1:length(k_values)
+    k = k_values(i);
+  
+
+    for j = 1:length(tau_values)
+        tau = tau_values(j);
+         % E_3 steady state
+    E3_S = (mu + v) / beta;
+    E3_I = (mu * alpha * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
+    E3_p = (mu * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
+
+    % Calculate characteristic equation coefficients
+    a = (beta*E3_I + mu)^2-2*beta^2*E3_S*E3_I-(k*alpha*E3_p*(1-E3_p))^2;
+    b = (beta * E3_S*E3_I)^2-2*k*mu*beta*E3_p*(1-E3_p)*E3_I*(beta*E3_I+mu)+(k*alpha*E3_p*(1-E3_p))^2 * ((beta*E3_I+mu)^2-2*beta^2*E3_S*E3_I);
+    c = (k*beta*E3_p*(1-E3_p)*E3_I)^2*(mu^2-alpha^2*beta^2*E3_S^2);
+    d = [1, a, b, c];
+
+    % Calculate eigenvalues of the characteristic equation
+    eigenvalues = i*sqrt(roots(d));
+    disp(eigenvalues);
+    
+       
+    end
+    for l = 1:length(stability_matrix)
+        % Check eigenvalues for stability
+        if all(real(eigenvalues) < 0)
+            stability_matrix(l) = 1;  % Stable
+        else
+            stability_matrix(l) = 0;  % Unstable
+        end
+         mylist(len +1) = stability_matrix(i, j);
+    end
+end
+disp(mylist);
 % Plot the regions of stability and instability
 figure;
-plot(real(eigenvalues), imag(eigenvalues), 'o');
-hold on;
-plot(0, 0, 'rx'); % Indicate the origin (unstable)
-xlabel('Real Part');
-ylabel('Imaginary Part');
-title('Stability Analysis');
-grid on;
-
-% Customize the plot as needed
-
+imagesc( k_values,tau_values, mylist);
+colormap([1 0 0; 0 1 0]); % Red for unstable, green for stable
+colorbar('Ticks', [0, 1], 'TickLabels', {'Unstable', 'Stable'});
+xlabel('k');
+ylabel('\tau');
+title('Stability Analysis for E3 Steady State for discrete kernel');
