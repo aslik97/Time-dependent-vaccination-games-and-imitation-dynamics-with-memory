@@ -1,5 +1,3 @@
-"""Stability regions for E3 with weak kernel distribution."""
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
@@ -40,8 +38,10 @@ def dynamics(t, Y, tau, k):
         p * k * p * (1 - p) * (1 - alpha * np.trapz(p * g_value, dx=0.1))
     ]
     
-    # Flatten the dydt array
-    return np.array(dydt).flatten()
+    return dydt
+
+# Define the number of time points
+num_time_points = 1001
 
 # Loop through different tau and k values
 for i, tau in enumerate(tau_values):
@@ -51,18 +51,21 @@ for i, tau in enumerate(tau_values):
         # Define the initial conditions for S, I, and p
         initial_conditions = [0.1, 0.1, 0.1]
         
-        # Define the time span
-        t_span = [0, 100]  # Time span from 0 to 100
+        # Define the time span with the fixed number of time points
+        t_span = np.linspace(0, 100, num=num_time_points)
         
-        # Solve the DDE system using solve_ivp without specifying t_eval
+        # Solve the DDE system using solve_ivp
         sol = solve_ivp(
-            lambda t, Y: dynamics(t, Y, tau, k),
-            t_span,
-            initial_conditions
+            dynamics,
+            [0, 100],
+            initial_conditions,
+            t_eval=t_span,
+            args=(tau, k)  # Pass tau and k as additional arguments
         )
         
         # Extract the final state
-        final_state = sol.y[:, -1]
+        final_state = sol.y  # Corrected indexing
+        
         
         # Calculate Jacobian matrix at the endemic steady state
         J = np.array([
