@@ -1,4 +1,4 @@
-function dydt = dynamics(t, Y, Z, tau)
+function dydt = dynamics_function(t, Y, Z, tau)
     S = Y(1);
     I = Y(2);
     p = Y(3);

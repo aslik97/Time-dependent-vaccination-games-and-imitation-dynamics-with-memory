@@ -15,11 +15,15 @@ E3 = [ (mu+v)/beta ;
 %g = @(s) (s.^(n_weak - 1) .* sigma^n_weak .* exp(-sigma * s)) / factorial(n_weak - 1);
 
 % Define values of tau and k for analysis
-tau_values = 0.1:1:600; % Mean time delay values
-k_values = 0.1:1:900;   % Imitation rate values
+tau_values = 0.1:0.1:1; % Mean time delay values
+k_values = 0.1:0.1:1;   % Imitation rate values
 
 % Initialize stability matrix (1: stable, 0: unstable)
 stability_matrix = zeros(length(tau_values), length(k_values));
+
+ % Define the Laplace transform of the kernel
+  %      Lg = @(lambda) sigma / (lambda + sigma)^p_star;
+
 
 % Loop through different tau and k values
 for i = 1:length(tau_values)
@@ -32,20 +36,31 @@ for i = 1:length(tau_values)
         
         % Solve the DDE system using dde23
         lags = tau; % Use tau as the lag
-        sol = dde23(@(t, Y, Z) dynamics(t, Y, Z, tau,k), lags, initial_conditions, [0, 100]);
+        sol = dde23(@(t, Y, Z) dynamics_weak_gamma(t, Y, Z, tau,k), lags, initial_conditions, [0, 1]);
         
         % Extract the final state
         final_state = sol.y(:, end);
+
+         % Calculate coefficients
+        A = 1; %TODO
+        B = ;
+        C = ;
+        D = ;
+        E = ;
+
+        % Calculate roots of the cubic equation
+        roots_Cubic = roots([A, 0, B, 0, C, 0, D]);
+        
         
         % Calculate Jacobian matrix at the endemic steady state
-        J = [
-            -beta * final_state(2) - mu, -beta * final_state(1), 0;
-            beta * final_state(2), -mu - v, 0;
-            0, 0, k * (1 - 2 * final_state(3)) * (1 - 3 * final_state(3))
-        ];
+       % J = [
+        %    -beta * final_state(2) - mu, -beta * final_state(1), -mu;
+         %   -beta * final_state(2), -mu - v+beta*final_state(1), 0;
+         %   0, k*final_state(3)*(1-final_state(3)), k * (1 - 2 * final_state(3)) * (final_state(2) - alpha * final_state(3)-k*alpha*final_state(3)*(1-final_state(3))*Lg)
+        %];
         
         % Calculate eigenvalues of the Jacobian
-        eig_values = eig(J);
+        %eig_values = eig(J);
         
         % Determine stability
         if all(real(eig_values) < 0)

@@ -1,61 +1,87 @@
-
-
 % Define parameters
-mu = 3.9 * exp(-5);
+mu = 3.9 * 10^(-5);
 v = 1/7;
 beta = 10 * (mu + v);
 alpha = 0.002;
-tau_0 = 2;
-
-% Define the Laplace transform of the kernel
-% Lg = @(lambda) exp(-lambda * tau_0);
 
 % Define the range of k and tau values
-k_values = 0.1:0.1:10;
-tau_values = 0.1:0.1:1;
+k_values = 0.1:0.1:50;
+tau_values = 0.1:0.1:50;
 
 % Initialize stability matrix
 stability_matrix = zeros(length(k_values), length(tau_values));
 
 for i = 1:length(k_values)
     k = k_values(i);
-  
 
     for j = 1:length(tau_values)
         tau = tau_values(j);
-         % E_3 steady state
-    E3_S = (mu + v) / beta;
-    E3_I = (mu * alpha * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
-    E3_p = (mu * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
 
-    % Calculate characteristic equation coefficients
-    a = (beta*E3_I + mu)^2-2*beta^2*E3_S*E3_I-(k*alpha*E3_p*(1-E3_p))^2;
-    b = (beta * E3_S*E3_I)^2-2*k*mu*beta*E3_p*(1-E3_p)*E3_I*(beta*E3_I+mu)+(k*alpha*E3_p*(1-E3_p))^2 * ((beta*E3_I+mu)^2-2*beta^2*E3_S*E3_I);
-    c = (k*beta*E3_p*(1-E3_p)*E3_I)^2*(mu^2-alpha^2*beta^2*E3_S^2);
-    d = [1, a, b, c];
-
-    % Calculate eigenvalues of the characteristic equation
-    eigenvalues = i*sqrt(roots(d));
-    disp(eigenvalues);
-    
-       
-    end
-    for l = 1:length(stability_matrix)
-        % Check eigenvalues for stability
-        if all(real(eigenvalues) < 0)
-            stability_matrix(l) = 1;  % Stable
+        % steady state
+        S_star = (mu + v) / beta;
+        I_star = (mu * alpha * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
+        p_star = (mu * (beta - (mu + v))) / (beta * (mu + alpha * (mu + v)));
+        
+        % Define the initial conditions for S, I, and p
+        initial_conditions = [0.1, 0.1, 0.1];
+        
+        % Solve the DDE system using dde23
+        lags = tau; % Use tau as the lag
+        sol = dde23(@(t, Y, Z) dynamics_discrete(t, Y, Z, tau,k), lags, initial_conditions, [0, 1]);
+        
+        % Extract the final state
+        final_state = sol.y(:, end);
+        % Calculate coefficients
+        A = 1;
+        B = (beta * final_state(2) + mu)^2 - 2 * beta^2 * final_state(1) * final_state(2) - (k * alpha * final_state(3) * (1 - final_state(3)))^2;
+        C = (beta^2 * final_state(1) * final_state(2))^2 - 2 * k * mu * beta * final_state(3) * (1 - final_state(3) * final_state(2)) * (beta * final_state(2) + mu) - (k * alpha * p_star * (1 - final_state(3)))^2 * ((beta * final_state(2) + mu)^2 - 2 * beta^2 * final_state(1) * final_state(2));
+        D = (k * beta * final_state(3) * (1 - final_state(3)) * final_state(2))^2 * (mu^2 - alpha^2 * beta^2 * final_state(1)^2);
+        coefficients = [A,B,C,D];
+        % Calculate roots of the cubic equation
+        roots_Cubic = roots(coefficients );
+        
+        % Extract real parts of roots
+        max_real_parts = max(real(roots_Cubic));
+        
+        disp(max_real_parts);
+        % Check stability criteria based on the real parts of roots
+        if (max_real_parts > 0)
+           stability_matrix(i, j) = 0;  % Unstable
         else
-            stability_matrix(l) = 0;  % Unstable
+           stability_matrix(i, j) = 1;  % Stable
         end
-         mylist(len +1) = stability_matrix(i, j);
     end
 end
-disp(mylist);
-% Plot the regions of stability and instability
+
+
+%disp(stability_matrix);
+% Create a stability plot
 figure;
-imagesc( k_values,tau_values, mylist);
+imagesc(tau_values, k_values, stability_matrix');
 colormap([1 0 0; 0 1 0]); % Red for unstable, green for stable
 colorbar('Ticks', [0, 1], 'TickLabels', {'Unstable', 'Stable'});
-xlabel('k');
-ylabel('\tau');
-title('Stability Analysis for E3 Steady State for discrete kernel');
+xlabel('\tau');
+ylabel('k');
+title('Stability Analysis for E3 Steady State');
+
+function dydt = dynamics_discrete(t, Y, Z, tau,k)
+
+    mu = 3.9 * 10^(-5);
+    v = 1/7;
+    beta = 10 * (mu + v);
+    alpha = 0.002;
+    S = Y(1);
+    I = Y(2);
+    p = Y(3);
+  
+    g = @(s) exp(-s * tau);
+    % Evaluate the discrete distribution kernel function
+    g_value = g(t - tau - Z);
+    
+    dydt = [
+        mu * (1 - p) - beta * S * I - mu * S;
+        beta * S * I - (mu + v) * I;
+        p * k * p * (1 - p) * (1 - alpha * trapz(Z, p .* g_value)) % trapz to integrate second exp. wrt. Z
+    ];
+end
+
