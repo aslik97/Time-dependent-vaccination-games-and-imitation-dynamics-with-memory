@@ -33,7 +33,7 @@ for i = 1:length(k_values)
         lags = tau; % Use tau as the lag
 
         sol = dde23(@(t, Y, Z) dynamics_discrete(t, Y, Z, tau, k), lags, initial_conditions, [0, 10]);
-        
+        disp(size(sol.x))
         % Extract the final state
         final_state = sol.y(:, end);
         
