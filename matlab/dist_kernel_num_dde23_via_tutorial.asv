@@ -10,7 +10,7 @@ for j = 1:length(lags)
         tau = lags(j);
   fprintf('lags(delay parameter): %d\n', tau);
 
-solution = dde23(@(t,y,Z) rhs_dde23(t,y,Z,tau),tau,@(t) dde23history(t,tau), [0,4000]);
+solution = dde23(@(t,y,Z) rhs_dde23(t,y,Z,tau),tau,@(t) dde23history(t,tau), [0,2000]);
 disp(size(solution.x));
 
 % plot the results
@@ -24,20 +24,11 @@ ylabel('solution','FontSize',14)
 legend('x','y','z')
 hold off
 end
-
 function x_h = dde23history(t,tau)
    % S+I=1
-   S=0.5;
+   S=0.1;
    I=1-S;
-    % history function for p
-    if t <= tau
-        % For t <= tau, the initial condition
-        p = 0; % Replace with initial value for p
-    else
-        % For t > tau, let p approach 1 gradually
-        p = 1 - exp(-(t - tau)); 
-    end
-   x_h = [S I p]; 
+   x_h = [S I 0.1]; %TODO THE PARAMETERS SHOULD PROBABLY BE DIFFERENT!!!!!!
 end
 
 function xdot = rhs_dde23(t,x,Z,tau)
@@ -54,19 +45,19 @@ function xdot = rhs_dde23(t,x,Z,tau)
     dirac_function = dirac(t- t_0);
     
     % large upper limit for integration 
-    %upper_limit = 1000;
+    upper_limit = 1000;
     
     % the function to be integrated 
     f = @(tau) f_function(p_delayed,tau,t);
 
     % quad function for numerical integration
-    result = integral(f, 0, inf);
+    result = quad(f, 0, upper_limit);
 
     
     xdot = [
         mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;
         beta * x(1) * x(2) - (mu + v) * x(2);
-        k * x(3) * (1 - x(3)) * (1 - alpha * result);% Here, delayed p directly
+        k * x(3) * (1 - x(3)) * (1 - alpha *result);% Here, delayed p directly
     ];
 
 end
@@ -79,7 +70,5 @@ function g_value = discrete_kernel( t,tau_0)
 end
 
 function f = f_function(p_delayed,tau,t)
- %f= p_delayed * dirac(t- tau);
- f= p_delayed * discrete_kernel(t, tau);
-
+ f= p_delayed * dirac(t- tau);
 end
