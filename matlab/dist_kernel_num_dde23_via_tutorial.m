@@ -8,10 +8,10 @@ lags=[20,50,100,150];
 
 for j = 1:length(lags)
         tau = lags(j);
-  fprintf('lags(delay parameter): %d\n', tau);
-
-solution = dde23(@(t,y,Z) rhs_dde23(t,y,Z,tau),tau,@(t) dde23history(t,tau), [0,4000]);
-disp(size(solution.x));
+    fprintf('lags(delay parameter): %d\n', tau);
+    %options = ddeset('MaxStep', 0.01); % Adjust the value as needed
+    solution = dde23(@(t,y,Z) rhs_dde23(t,y,Z,tau),tau,@(t) dde23history(t,tau), [0,4000]);
+    disp(solution.y(2,:));
 
 % plot the results
 figure
@@ -19,67 +19,61 @@ plot(solution.x,solution.y(2,:),'b-','Linewidth',2)
 hold on
 title('Solution','FontSize',16)
 xlabel('time','FontSize',14)
-ylim([0 3e-6]);
+ylim([1.5e-4 3e-4]);
 ylabel('solution','FontSize',14)
 legend('x','y','z')
 hold off
 end
 
-function x_h = dde23history(t,tau)
-   % S+I=1
-   S=0.5;
-   I=1-S;
-    % history function for p
+function x_h = dde23history(t, tau)
+ persistent saved_I; % Declare a persistent variable to store I
+ S = 0.8; 
     if t <= tau
-        % For t <= tau, the initial condition
-        p = 0; % Replace with initial value for p
+        
+        % For t <= tau, use the initial condition for p
+        p = 0; % Replace with your desired initial value for p
+        
+        % Calculate I based on S and p
+        I = (1 - S-p);
+        saved_I = I;
     else
-        % For t > tau, let p approach 1 gradually
-        p = 1 - exp(-(t - tau)); 
+       % For t > tau, use the saved value of I
+       p = rand() * (1 - S);
+       I = saved_I;
     end
-   x_h = [S I p]; 
-end
+    x_h = [S I p];
+    end
 
-function xdot = rhs_dde23(t,x,Z,tau)
+
+function xdot = rhs_dde23(t,y,Z,tau)
 
     k = 400;
     mu = 3.9 * 10^(-5);
     v = 1/7;
     beta = 10 * (mu + v);
     alpha = 0.002;
-    t_0 = tau;
+   
     % Assuming Z corresponds to delayed values of dynamical system at time t-tau
     p_delayed = Z(3); % delayed p for the third differential equation
-    
-    dirac_function = dirac(t- t_0);
-    
-    % large upper limit for integration 
-    %upper_limit = 1000;
-    
-    % the function to be integrated 
+   
+    % function to be integrated 
     f = @(tau) f_function(p_delayed,tau,t);
 
-    % quad function for numerical integration
+    % integral function for numerical integration
     result = integral(f, 0, inf);
-
-    
+  
     xdot = [
-        mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;
-        beta * x(1) * x(2) - (mu + v) * x(2);
-        k * x(3) * (1 - x(3)) * (1 - alpha * result);% Here, delayed p directly
+        mu * (1 - y(3)) - beta * y(1) * y(2) - mu * y(1) ;
+        beta * y(1) * y(2) - (mu + v) * y(2);
+        k * y(3) * (1 - y(3)) * (1 - alpha * result);% Here, delayed p directly
     ];
 
 end
-function g_value = discrete_kernel( t,tau_0)
-    % t: The time variable
-    % tau_0: The center of the Dirac delta function
-    % sigma: The width of the Gaussian approximation
-    sigma = 0.1;
-    g_value = exp(-(t - tau_0).^2 / (2 * sigma^2)) / (sigma * sqrt(2 * pi));
-end
 
-function f = f_function(p_delayed,tau,t)
- %f= p_delayed * dirac(t- tau);
- f= p_delayed * discrete_kernel(t, tau);
+
+function f = f_function(p_delayed,tau,t)% Gaussian approximation
+sigma = 0.01;  % Small standard deviation
+dirac_approximation = 1 / (sigma * sqrt(2 * pi)) * exp(-(t- tau).^2 / (2 * sigma^2));
+ f= p_delayed * dirac_approximation;
 
 end
