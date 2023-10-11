@@ -26,24 +26,27 @@ hold off
 end
 
 function x_h = dde23history(t, tau)
- persistent saved_I; % Declare a persistent variable to store I
- S = 0.8; 
+   persistent saved_I; % persistent variable to store I
+    S = 0.8;
+
     if t <= tau
-        
-        % For t <= tau, use the initial condition for p
-        p = 0; % Replace with your desired initial value for p
-        
-        % Calculate I based on S and p
-        I = rand()*(1 - S-p);
+        % For t <= tau, smoothly varying initial conditions
+        p = 0; % initial value for p
+        % smoothly varying sine function for I
+        I = 0.5 * (1 - sin(pi * t / tau)); % Adjust the frequency as needed
         saved_I = I;
     else
-       % For t > tau, use the saved value of I
-       p = rand() * (1 - S);
-       
-       I = saved_I;
+        % For t > tau, use the saved value of I with an oscillatory component
+        p = rand() * (1 - S);
+        % Add an oscillatory term to I
+        oscillation_frequency = 2 * pi; % Adjust the frequency 
+        I = saved_I + 0.1 * sin(oscillation_frequency * (t - tau)); % Amplitude and frequency
+        I = abs(I); % Ensure non-negative values
     end
+
     x_h = [S I p];
-    end
+end
+
 
 
 function xdot = rhs_dde23(t,y,Z,tau)
