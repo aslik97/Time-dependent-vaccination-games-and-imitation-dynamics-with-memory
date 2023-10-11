@@ -34,11 +34,12 @@ function x_h = dde23history(t, tau)
         p = 0; % Replace with your desired initial value for p
         
         % Calculate I based on S and p
-        I = (1 - S-p);
+        I = rand()*(1 - S-p);
         saved_I = I;
     else
        % For t > tau, use the saved value of I
        p = rand() * (1 - S);
+       
        I = saved_I;
     end
     x_h = [S I p];
