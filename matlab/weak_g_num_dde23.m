@@ -60,7 +60,7 @@ function xdot = rhs_dde23(t,x,Z,tau)
     xdot = [
         mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;
         beta * x(1) * x(2) - (mu + v) * x(2);
-        k * x(3) * (1 - x(3)) * (1 - alpha * integral_term);% Here, delayed p directly
+        k * x(3) * (1 - x(3)) * (x(2) - alpha * integral_term);% Here, delayed p directly
     ];
    disp(['Time: ', num2str(t), ' Delayed Time: ', num2str(t-tau)]);
 
