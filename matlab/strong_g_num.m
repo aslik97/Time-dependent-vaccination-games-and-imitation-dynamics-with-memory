@@ -8,7 +8,7 @@ for j = 1:length(lags)
         tau = lags(j);
 %options = ddeset('RelTol',1e-6,'AbsTol',1e-8);
 solution = dde23(@(t,x,Z) rhs_dde23(t,x,Z,tau),tau,@dde23history, [0,4000]);
-disp(size(solution.y));
+disp(size(solution.y(2,:)));
 % plot the results
 figure;
    plot(solution.x,solution.y(2,:),'r-','Linewidth',2)
@@ -35,7 +35,7 @@ function x_h = dde23history(t)
     %t0 = 0;      % The time when p = 0.5. Adjust as needed.
     %p = 1 / (1 + exp(-a * (t - t0)));
     %disp(p);
-    p=0.1;
+    p=0.01;
     I = mu * (1 - 1/R0) / (mu + v)-p;
     S = 1/R0-p;
     end
@@ -52,12 +52,13 @@ function xdot = rhs_dde23(t,x,Z,tau)
     beta = 10 * (mu + v);
     alpha = 0.002;
    sigma = 1/tau;
-    % Assuming Z corresponds to delayed values of dynamicasl system at time t-tau
+    % Assuming Z corresponds to delayed values of dynamical system at time t-tau
     p_delayed = Z(3,1); % delayed p for the third differential equation
     disp(['p_delayed: ', num2str(p_delayed)]);
-   % Using the weak gamma kernel
-    g = sigma^(2) *tau* exp(-sigma * tau);
-    integral_term = g * p_delayed; % This models the convolution with the kernel
+   % Using the strong gamma kernel
+   g = @(t) sigma^(2) *t* exp(-sigma * t);
+    f_to_integrate = @(tau) g(tau) * p_delayed;
+    integral_term = quadgk(f_to_integrate, 0, Inf) ; % This models the convolution with the kernel
     %disp(integral_term);
     xdot = [
         mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;

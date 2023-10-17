@@ -1,5 +1,3 @@
-%CORRECT OUTPUTS
-
 clear all:
 close all;
 % define vector with all delays
@@ -49,13 +47,16 @@ function xdot = rhs_dde23(t,x,Z,tau)
     v = 1/7;
     beta = 10 * (mu + v);
     alpha = 0.002;
-   sigma = 1/tau;
+   
     % Assuming Z corresponds to delayed values of dynamicasl system at time t-tau
     p_delayed = Z(3,1); % delayed p for the third differential equation
     disp(['p_delayed: ', num2str(p_delayed)]);
-   % Using the weak gamma kernel
-    g = sigma * exp(-sigma * tau);
-    integral_term = g * p_delayed; % This models the convolution with the kernel
+   % Using the AF kernel
+   %g(s) = (e−s/T1 − e−s/T2 ) /(T1 − T2)
+   T1= (0.5+0.4)*tau;
+   T2=(0.5-0.4)*tau;
+    g = exp(- tau/T1 )- exp(-tau*T2)/(T1-T2);
+    integral_term = trapz( g * p_delayed); % This models the convolution with the kernel
     %disp(integral_term);
     xdot = [
         mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;

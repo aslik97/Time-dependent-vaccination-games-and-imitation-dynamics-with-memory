@@ -1,5 +1,3 @@
-%CORRECT OUTPUTS
-
 clear all:
 close all;
 % define vector with all delays
@@ -31,11 +29,12 @@ function x_h = dde23history(t)
     I = mu * (1 - 1/R0) / (mu + v);
     S = 1/R0;
 
-    % For t >= 0
-    %if t >= 0
+    % For t == 0
+    %if t == 0
     %    a = 0.1;      % Control the steepness. Adjust as needed.
     %t0 = 0;      % The time when p = 0.5. Adjust as needed.
     %p = 1 / (1 + exp(-a * (t - t0)));
+    %p=0.0001;
     %disp(p);
     %end
    
@@ -49,13 +48,24 @@ function xdot = rhs_dde23(t,x,Z,tau)
     v = 1/7;
     beta = 10 * (mu + v);
     alpha = 0.002;
-   sigma = 1/tau;
+   
     % Assuming Z corresponds to delayed values of dynamicasl system at time t-tau
-    p_delayed = Z(3,1); % delayed p for the third differential equation
+    p_delayed = Z(3); % delayed p for the third differential equation
     disp(['p_delayed: ', num2str(p_delayed)]);
-   % Using the weak gamma kernel
-    g = sigma * exp(-sigma * tau);
-    integral_term = g * p_delayed; % This models the convolution with the kernel
+   % Using the AF kernel
+   %g(s) = (e−s/T1 − e−s/T2 ) /(T1 − T2)
+   T1= (0.5+0.4)*tau;
+   T2=(0.5-0.4)*tau;
+   
+    % Define your function g and p_delayed (these are just examples)
+g = @(t) exp(- t/T1 )- exp(-t*T2)/(T1-T2);
+
+% Create a function to be integrated, which is the product of g and p_delayed
+f_to_integrate = @(tau) g(tau) * p_delayed;
+
+    % Perform numerical integration using the quad function
+integral_term = quadgk(f_to_integrate, 0, Inf);
+    % integral_term = trapz( g * p_delayed); % This models the convolution with the kernel
     %disp(integral_term);
     xdot = [
         mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;
