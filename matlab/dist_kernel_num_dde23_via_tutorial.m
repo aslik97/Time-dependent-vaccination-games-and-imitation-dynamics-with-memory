@@ -1,8 +1,8 @@
 clear all:
 close all;
 % define vector with all delays
-lags=[20,50,100,150];
-%lags=[20];
+%lags=[20,50,100,150];
+lags=[20];
 for j = 1:length(lags)
         tau = lags(j);
  %options = ddeset('RelTol',1e-6,'AbsTol',1e-8);
@@ -15,7 +15,7 @@ for j = 1:length(lags)
 
  %history = [initial_S; initial_I; initial_p];
 
-solution = dde23(@(t,x,Z) rhs_dde23(t,x,Z,tau),tau,@dde23history, [0,4000]);
+solution = dde23(@(t,x,Z) rhs_dde23(t,x,Z,tau),tau,@dde23history, [0,500]);
 disp(size(solution.y(2,:)));
 % plot the results
 figure;
@@ -34,12 +34,10 @@ function x_h = dde23history(t)
     R0= 10;
     % Default case for t < 0
      %I = 2.5*10^(-4);
-     S = 1/R0;
-     %p = 0;
-
-   
+    S = 1/R0;
+    p = 0.95;
     I = mu * (1 - 1/R0) / (mu + v);
-     p = 15000*I;
+    %p = 15000*I;
     %S = 1/R0;
 
     %I= 0.2;
@@ -83,19 +81,34 @@ function xdot = rhs_dde23(t,x,Z,tau)
     else
         integral_term = p_delayed;
     end
-    if  (beta * x(1) * x(2) - (mu + v) * x(2))> 0 
-        xdot = [
+     xdot = [
         mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;
         beta * x(1) * x(2) - (mu + v) * x(2);
         k * x(3) * (1 - x(3)) * (x(2)- alpha * integral_term);% Here, delayed p directly
                  ];
-    else % if x <= 0
-        xdot = [
-        mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;
-        0;
-        k * x(3) * (1 - x(3)) * (x(2)- alpha * integral_term);% Here, delayed p directly
-                ];
+     dxTmp = 1/(1+xdot(2)*xdot(3)) - xdot(1);
+     
+     if (xdot(2)) > 0 
+            xdot(2) = dxTmp; 
+    elseif dxTmp > 0
+    % xdot(2) becomes positive again
+        xdot(2) = dxTmp;
+    else
+        xdot(2) = 0;
     end
+    % if  (beta * x(1) * x(2) - (mu + v) * x(2))> 0 
+    %    xdot = [
+    %    mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;
+    %    beta * x(1) * x(2) - (mu + v) * x(2);
+    %    k * x(3) * (1 - x(3)) * (x(2)- alpha * integral_term);% Here, delayed p directly
+    %             ];
+    %else % if x <= 0
+    %    xdot = [
+    %    mu * (1 - x(3)) - beta * x(1) * x(2) - mu * x(1) ;
+    %    0;
+    %    k * x(3) * (1 - x(3)) * (x(2)- alpha * integral_term);% Here, delayed p directly
+    %            ];
+    %end
    
-    %disp(['Time: ', num2str(t), ' Delayed Time: ', num2str(t-tau), 'p_delayed: ', num2str(p_delayed)]);
+    disp(['Time: ', num2str(t), ' Delayed Time: ', num2str(t-tau), 'p_delayed: ', num2str(p_delayed)]);
 end
