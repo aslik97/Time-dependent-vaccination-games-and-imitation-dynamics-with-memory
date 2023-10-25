@@ -1,5 +1,5 @@
 % Load the parameters and function from dynamics_function.m
-mu = 3.9*exp(-5);
+mu = 3.9 * 10^(-5);
 v = 1/7;
 beta = 10 * (mu + v);
 alpha = 0.002;
