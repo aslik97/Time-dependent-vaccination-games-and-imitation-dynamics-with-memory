@@ -73,7 +73,7 @@ function J = jacobian_at(Y, beta, mu, v, k, alpha, tau)
     J(1,:) = [-beta*I-mu, -beta*S, 0];
     J(2,:) = [beta*I, beta*S-mu-v, 0];
     J(3,:) = [0, k*p*(1-p), k*(1-2*p)*(1-alpha*p)]; 
-    % I've simplified your Jacobian matrix. You may need to ensure it's derived correctly from the equations.
+    % simplified Jacobian matrix. 
 end
 
 
