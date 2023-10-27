@@ -27,7 +27,7 @@ function x_h = dde23history(t)
     R0= 10;
 
     % Default case for t < 0
-    p = 0;
+    p = 0.05;
     I = mu * (1 - 1/R0) / (mu + v);
     S = 1/R0;
 

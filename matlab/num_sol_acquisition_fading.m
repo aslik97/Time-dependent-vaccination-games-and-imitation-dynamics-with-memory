@@ -6,8 +6,8 @@ lags=[20,50,100,150];
 
 for j = 1:length(lags)
         tau = lags(j);
-%options = ddeset('RelTol',1e-6,'AbsTol',1e-8);
-solution = dde23(@(t,x,Z) rhs_dde23(t,x,Z,tau),tau,@dde23history, [0,4000]);
+options = ddeset('RelTol',1e-6,'AbsTol',1e-8);
+solution = dde23(@(t,x,Z) rhs_dde23(t,x,Z,tau),tau,@dde23history, [0,4000],options);
 disp(size(solution.y(2,:)));
 % plot the results
 figure;
@@ -25,7 +25,7 @@ function x_h = dde23history(t)
     R0= 10;
 
     % Default case for t < 0
-    p = 0;
+    p = 0.05;
     I = mu * (1 - 1/R0) / (mu + v);
     S = 1/R0;
 
