@@ -9,14 +9,13 @@ k = 1;
 sigma = 0.1; 
 beta = 10 * (mu + v);
 alpha = 0.002;
-R0=10;
 
 %  weak gamma distribution kernel function
 g = @(s) sigma * exp(-sigma * s);
 
 %  initial conditions
-I0 = mu * (1 - 1/R0) / (mu + v);
-S0 = 1/R0;
+S0 = 0.8;
+I0 = 0.1; 
 p0 = 0.05; 
 
 % Define the time span for integration
@@ -43,7 +42,7 @@ M_values = Y(:, 4);
 figure;
 hold on;
 plot(t, I, 'r-', 'LineWidth', 2);
-title('I');
+title('S and I');
 xlabel('Time');
 ylabel('I');
 legend('I');
