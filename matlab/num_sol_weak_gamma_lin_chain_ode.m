@@ -1,53 +1,50 @@
 clear all;
 close all;
 
-% Define model parameters
-mu = 3.9 * 10^(-5);
-v = 1/7;
-beta = 10 / (mu + v); 
-k = 1; 
-sigma = 0.1; 
-beta = 10 * (mu + v);
-alpha = 0.002;
-R0=10;
+% Define vector with all delays
+lags = [20, 50, 100, 150];
 
-%  weak gamma distribution kernel function
-g = @(s) sigma * exp(-sigma * s);
+for j = 1:length(lags)
+    tau = lags(j);
+    % Initial conditions
+    mu = 3.9 * 10^(-5);
+    v = 1/7;
+    R0 = 10;
+    S0 = 1/R0;
+    I0 = mu * (1 - 1/R0) / (mu + v);
+    p0 = 0.05;
+    M0 = p0; % Initial value of M can be set to the initial value of p
+    
+    y0 = [S0; I0; p0; M0];
+    
+    [t, y] = ode45(@(t,y) rhs_ode(t, y,tau), [0, 4000], y0);
+    
+    % Plot the results
+    figure;
+    plot(t, y(:,2), 'r-', 'Linewidth', 2);
+    title(['\tau = ', num2str(tau)], 'FontSize', 16);
+    xlabel('time, days', 'FontSize', 14);
+    ylabel('I(t)', 'FontSize', 14);
+    ylim([0 3e-4]);
+end
 
-%  initial conditions
-I0 = mu * (1 - 1/R0) / (mu + v);
-S0 = 1/R0;
-p0 = 0.05; 
-
-% Define the time span for integration
-tspan = [0, 4000];
-
-% Define the system of ODEs
-odefun = @(t, Y) [
-    mu * (1 - Y(3)) - beta * Y(1) * Y(2) - mu * Y(1);
-    beta * Y(1) * Y(2) - (mu + v) * Y(2);
-    k * Y(3) * (1 - Y(3)) * (Y(2) - alpha * Y(4));
-    sigma * Y(3) - sigma * Y(4);
-];
-
-% Solve the system of ODEs using ode45
-[t, Y] = ode45(odefun, tspan, [S0, I0, p0, 0]);
-
-% Extract the results
-S = Y(:, 1);
-I = Y(:, 2);
-p = Y(:, 3);
-M_values = Y(:, 4);
-
-% Plot the results
-figure;
-hold on;
-plot(t, I, 'r-', 'LineWidth', 2);
-title('I');
-xlabel('Time');
-ylabel('I');
-legend('I');
-ylim([0 3e-4]);
-
-
-hold off;
+function dydt = rhs_ode(t, y,tau)
+    S = y(1);
+    I = y(2);
+    p = y(3);
+    M = y(4);
+    
+    k = 400;
+    mu = 3.9 * 10^(-5);
+    v = 1/7;
+    beta = 10 * (mu + v);
+    alpha = 0.002;
+    sigma = 1/tau; % passed to the function
+    
+    dSdt = mu * (1 - p) - beta * S * I - mu * S;
+    dIdt = beta * S * I - (mu + v) * I;
+    dpdt = k * p * (1 - p) * (I - alpha * M);
+    dMdt = sigma * p - sigma * M;
+    
+    dydt = [dSdt; dIdt; dpdt; dMdt];
+end
