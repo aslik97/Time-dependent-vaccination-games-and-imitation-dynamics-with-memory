@@ -4,20 +4,23 @@ v = 1/7;           % Rate of recovery from infection
 R_0 = 15;          % Basic Reproduction Number
 beta = R_0*(mu+v); % Transmission rate
 k = 40;            % Combined constant ( given k*theta = 40)
-p_c = 1 - 1/R_0;   % Critical elimination coverage
-%p_c =0.56; 
+%p_c = 1 - 1/R_0;             %critical elimination coverage
+p_c =0.933; 
 disp(p_c);
-gamma = 0;         % For the I-model
-alpha_A = 1.638* 10^(-4);     %defined from me
-theta_A = k;       % From the condition k*theta = 40 and taking theta(I) = theta_A*I
+gamma = 0;                    %for the I-model
+ 
+alpha_A = 1.638* 10^(-4);       %defined from me
+theta_A = k;                  %from the condition k*theta = 40 and taking theta(I) = theta_A*I
+%I_3= alpha_A * p_3- gamma*(1/p_3);
+%E_3 = [1/R_0,I_3,p_3];
 
 % Differential equations
 f = @(t,y) [
     mu*(1-y(3)) - mu*y(1) - beta*y(1)*y(2);                                   % dS/dt
     beta*y(1)*y(2) - (mu+v)*y(2);                                             % dI/dt
-    k*(1-y(3)) * ((theta_A*y(2) - alpha_A*y(3))*y(3) - gamma);                % dp/dt
+     k*(1-y(3)) * ((theta_A*y(2) - alpha_A*y(3))*y(3) - gamma);            % dp/dt
 ];
-
+ 
 % Initial conditions
 S0 = 1.04/R_0;
 I0 = 0.82e-5;
