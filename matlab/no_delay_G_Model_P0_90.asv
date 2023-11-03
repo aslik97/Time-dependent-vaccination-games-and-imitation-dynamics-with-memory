@@ -1,24 +1,24 @@
+clear all
+close all
 % Parameter definitions
-mu = 1/(78*365);          % Birth and death rate (1/L, where L is life expectancy)
-v = 1/7;           % Rate of recovery from infection
-R_0 = 15;          % Basic Reproduction Number
+mu = 1/(78*365);  % Birth and death rate (1/L, where L is life expectancy)
+v = 1/7;% Rate of recovery from infection
+R_0 = 15;% Basic Reproduction Number
 beta = R_0*(mu+v); % Transmission rate
 p_3 = 0.90;
-k_theta = 40; % Combined constant ( given k*theta = 40)
-%p_c = 1 - 1/R_0;             %critical elimination coverage
-p_c =sqrt(0.871); 
-%p_c=(p_3*(mu+(mu+v)*alpha_A))/mu;
-%disp(p_c);
-gamma_hat = 1.253e-4;                    %for the G-model
+k_theta = 40; % Combined constant ( given k*theta = 40)          
+p_c =sqrt(0.871); %critical elimination coverage
+gamma_hat = 1.253e-4;%for G-model
 alpha_hat= 0.091e-4; 
+
 
 % Differential equations
 f = @(t,y) [
-    mu*(1-p_3) - mu*y(1) - beta*y(1)*y(2);                                   % dS/dt
+    mu*(1-y(3)) - mu*y(1) - beta*y(1)*y(2);                                   % dS/dt
     beta*y(1)*y(2) - (mu+v)*y(2);                                             % dI/dt
-     k_theta*(1-p_3) * ((y(2) - alpha_hat*p_3)*p_3 + gamma_hat);            % dp/dt
+     k_theta*(1-y(3)) * ((y(2) - alpha_hat*p_3)*y(3) + gamma_hat);            % dp/dt
 ];
-
+ 
  
 % Initial conditions
 S0 = 1.04/R_0;
