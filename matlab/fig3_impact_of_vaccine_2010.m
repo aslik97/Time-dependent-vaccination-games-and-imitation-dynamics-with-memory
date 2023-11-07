@@ -8,7 +8,7 @@ R_0 = 10;         % Basic Reproduction Number
 beta = R_0 * (mu + v); % Transmission rate
 p_c = 0.9;      % Critical elimination coverage
 theta= 15000;
-k_values=[0.0005,0.002,0.000035]; % Array of k values
+k_values=[0.0005,0.002,0.0035]; % Array of k values
 
 % Initial conditions
 S0 = 1/R_0;

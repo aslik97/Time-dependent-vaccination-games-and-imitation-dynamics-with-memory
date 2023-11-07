@@ -12,17 +12,17 @@ gamma_hat = 1.253e-4;%for G-model
 alpha_hat= 0.091e-4; 
  
 % Initial conditions
-S0= 1/R_0;
-I0=(mu*(1-(1/R_0)))/(mu+v);
+S0= 1.04/R_0;
+%I0=(mu*(1-(1/R_0)))/(mu+v);
 %S0 = 1.04/R_0;
-%I0 = 0.82e-5;
+I0 = 0.82e-5;
 p0 = 0.95;
 
 % Time span
 tspan = [0, 80*365];
 
 % using ode45
-[t, Y] = ode45(@(t,y) dynamics(t, y, mu, v, beta, k_theta, alpha_hat, gamma_hat,R_0), tspan, [S0 I0 p0]);
+[t, Y] = ode45(@(t,y) dynamics(t, y, mu, v, beta, k_theta, alpha_hat, gamma_hat), tspan, [S0 I0 p0]);
 
 % Plots
 figure;
@@ -31,6 +31,7 @@ plot(t/365, R_0*Y(:,1)); % R_E(t) = R_0*S(t)
 title('R_E(t) vs t');
 xlabel('time');
 ylabel('R_E(t)');
+xlim([0 80]);
 
 subplot(1,3,2);
 plot(t/365, Y(:,2));
