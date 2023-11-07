@@ -22,7 +22,7 @@ for i = 1:length(tau_vector)
    %M0 =  tau; %int_0^infty (sigma*exp(-sigma*s)*p(-s)) ds; % Initial value
    %of M can be set to the initial value of p, because it converges to p0
    tspan = [0, 4000];
-    [t, y] = ode45(@(t,y) rhs_ode(t, y,tau,k,mu,v,beta,alpha,sigma), tspan, [S0 I0 p0 M10 M20]);
+   [t, y] = ode45(@(t,y) rhs_ode(t, y,tau,k,mu,v,beta,alpha,sigma), tspan, [S0 I0 p0 M10 M20]);
     
     figure;
     plot(t, y(:,2), 'r-', 'Linewidth', 2);
