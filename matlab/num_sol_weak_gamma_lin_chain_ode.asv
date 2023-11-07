@@ -6,17 +6,22 @@ lags = [20, 50, 100, 150];
 
 for j = 1:length(lags)
     tau = lags(j);
-    sigma = 1 / tau;   
+
+    sigma = 1 / tau; 
+    alpha = 0.01;    
+    integrand = @(s) sigma*exp(-sigma*s).*tau;
+    result = integral(integrand, 0, Inf);
+
     % Initial conditions
     mu = 3.9 * 10^(-5);
     v = 1/7;
     R0 = 10;
     S0 = 1/R0;
     I0 = mu * (1 - 1/R0) / (mu + v);
-    p0 = 0;
-    integrand = @(s) sigma * exp(-sigma * s)*tau;  % Define the integrand function
+    p0 = 0.05;
+    integrand = @(s) sigma * exp(-sigma * s);  % Define the integrand function
     M0 = integral(integrand, 0, Inf);  % Compute the integral from 0 to infinity
-    disp(M0);
+
    %M0 =  tau; %int_0^infty (sigma*exp(-sigma*s)*p(-s)) ds; % Initial value of M can be set to the initial value of p
     
     y0 = [S0; I0; p0; M0];

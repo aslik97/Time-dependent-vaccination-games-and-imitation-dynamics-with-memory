@@ -1,21 +1,21 @@
-function dydt = dynamics(t, Y, Z, tau,k)
-    S = Y(1);
-    I = Y(2);
-    p = Y(3);
-    % Load the parameters and function from dynamics_function.m
-mu = 3.9*exp(-5);
-v = 1/7;
-beta = 10 * (mu + v);
-alpha = 0.002;
-    n_weak = 1;
-    sigma = 2;
-    g = @(s) (s.^(n_weak - 1) .* sigma^n_weak .* exp(-sigma * s)) / factorial(n_weak - 1);
-    % Evaluate the gamma distribution kernel function
-    g_value = g(t - tau - Z);
-    
-    dydt = [
-        mu * (1 - p) - beta * S * I - mu * S;
-        beta * S * I - (mu + v) * I;
-        p * k * p * (1 - p) * (1 - alpha * trapz(Z, p .* g_value))
-    ];
+function dydt = dynamics(t, y, mu, v, beta, k_theta, alpha_hat, gamma_hat,R_0)
+
+    S = y(1);
+    I = y(2);
+    p = y(3);
+
+    % Cp_imitation_3
+    p_imitation_3 = 0.90;%(mu * p_c) / (mu + (mu + v) * alpha_hat);
+
+    % Immigration rate (1 individual per week in a population of 5e6)
+    Imm_rate = 1 / (5e6 *7);
+
+    % Differential equations
+    % Define the system of differential equations
+    dSdt = mu*(1-p_imitation_3 ) - mu*S - beta*S*I; % dS/dt
+    dIdt = beta*S*I - (mu+v)*I;        % dI/dt
+    dpdt = k_theta*(1-p_imitation_3 ) * ((I - alpha_hat*p)*p_imitation_3  + gamma_hat);%1-(1/R_0)-(mu + v)/(mu)*I; %k_theta*(1-p) * ((I - alpha_hat*p)*p + gamma_hat); % dp/dt
+
+    %column vector
+    dydt = [dSdt; dIdt; dpdt];
 end
