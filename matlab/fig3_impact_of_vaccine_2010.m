@@ -19,6 +19,7 @@ p0 = 0.95;
 tspan = [0, 40 *365];
 for i = 1:length(k_values)
     k = k_values(i);
+    disp(k);
 % using ode45
 [t, Y] = ode45(@(t, y) dynamics(t, y, mu, v, beta,theta,k), tspan, [S0 I0 p0]);
 

@@ -2,7 +2,7 @@ clear all
 close all
 clc
 
-mu = 3.9 * 10^(-5);
+mu = 3.9e-5;
 v = 1/7;
 beta = 10 * (mu + v);
 alpha = 0.002;
@@ -56,8 +56,8 @@ end
 % Create a stability plot with colors
 figure;
 imagesc(tau_values, k_values, stability_matrix');
-colormap([1 0 0; 0 1 0]); % Red for unstable, green for stable
-colorbar('Ticks', [0, 1], 'TickLabels', {'Unstable', 'Stable'});
+colormap(jet); % Use a jet colormap for continuous scale
+colorbar;
 xlabel('\tau');
 ylabel('k');
 title('Stability Analysis for E3 Steady State');
@@ -67,24 +67,23 @@ function dydt = dynamics_discrete(t, Y, Z, tau, k)
     v = 1/7;
     beta = 10 * (mu + v);
     alpha = 0.002;
-
     S = Y(1);
     I = Y(2);
     p = Y(3);
+    
+    % Since g(s) is a Dirac delta function, we evaluate p at (t - tau)
+    p_delayed = Z(3); % Assuming Z is the history of p
 
-     % Evaluate the discrete distribution kernel function
-    sigma = 0.01; % Adjust the width as needed
-    result = discrete_kernel(tau, 0.1, sigma);
-   
     dydt = [
         mu * (1 - p) - beta * S * I - mu * S;
         beta * S * I - (mu + v) * I;
-        p * k * p * (1 - p) * (1 - alpha * trapz(result)) % trapz to integrate second exp. wrt. Z
+        k * p * (1 - p) * (I - alpha * p_delayed) % Removed integral, directly use p_delayed
     ];
+   
 end
 
 function J = calculate_jacobian(final_state, tau, k)
-    mu = 3.9 * 10^(-5);
+    mu = 3.9e-5;
     v = 1/7;
     beta = 10 * (mu + v);
     alpha = 0.002;
@@ -96,10 +95,10 @@ function J = calculate_jacobian(final_state, tau, k)
     g_value = exp(-tau); % At Z=0
 
     J = [
-        -beta * I - mu, -beta * S, -mu;
-        beta * I, -mu - v + beta * S, 0;
-        0, k * p * (1 - p) * (1 - alpha * p * g_value), k * (1 - 2 * p) * (I - alpha * p - k * alpha * p * (1 - p) * g_value)
-    ];
+        -beta * I - mu , -beta * S, -mu;
+        beta * I, -mu - v + beta * S , 0;
+        0, k * p * (1 - p) , k * (1 - 2 * p) * (I - alpha * p) - (k * alpha * p * (1 - p) * g_value) %* (1 - alpha * p * g_value)
+        ];
 end
 
 function g_value = discrete_kernel(t, tau_0, sigma)

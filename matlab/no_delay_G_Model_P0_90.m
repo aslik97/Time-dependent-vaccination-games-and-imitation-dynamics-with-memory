@@ -1,7 +1,7 @@
 clear all
 close all
 % Parameter definitions
-mu = 1/(75*365);  % Birth and death rate (1/L, where L is life expectancy)
+mu = 1/(78*365);  % Birth and death rate (1/L, where L is life expectancy)
 v = 1/(7);% Rate of recovery from infection
 R_0 = 15;% Basic Reproduction Number
 beta = R_0*(mu+v); % Transmission rate
