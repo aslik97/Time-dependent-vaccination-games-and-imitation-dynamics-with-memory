@@ -1,0 +1,65 @@
+
+
+% Define parameters
+gamma = 1.41e-4;
+sigma = 0.9; % Different sigma values for comparison
+mu = 1/(11*365);          % Birth and death rate (1/L, where L is life expectancy)
+v = 1/7;           % Rate of recovery from infection
+R_0 = 15;          % Basic Reproduction Number
+beta = R_0*(mu+v); % Transmission rate
+p_3 = 0.90;             %critical elimination coverage
+p_c =0.933; 
+gamma_hat = 0;                    %for the I-model
+alpha_hat = 0.091e-4;       %defined from me
+k_theta = 40;                  %from the condition k*theta = 40 and taking theta(I) = theta_A*I
+
+% Initial conditions
+S0 = 1.04/R_0;
+I0 = 0.82e-5;
+p0 = 0.95;
+
+% Time span
+tspan = [0, 365*11];
+
+% Simulation and Plotting
+    [T, Y] = ode45(@(t, y) diseaseDynamics(t, y, mu, alpha_hat, k_theta, gamma, sigma,beta,v), tspan, [S0 I0 p0]);
+    
+% Plots
+figure;
+subplot(1,3,1);
+plot(T/365, R_0*Y(:,1)); % R_E(t) = R_0*S(t)
+title('R_E(t) vs t');
+xlabel('time');
+ylabel('R_E(t)');
+
+subplot(1,3,2);
+plot(T/365, Y(:,2));
+title('I(t) vs t');
+xlabel('time');
+ylabel('I(t)');
+
+subplot(1,3,3);
+plot(T/365, Y(:,3));
+title('p(t) vs t');
+xlabel('time');
+ylabel('p(t)');
+hold on;
+line([0 365*11],[p_c p_c],'Color','red','LineStyle','--');
+legend('p(t)', 'p_c');
+
+% Differential equations function
+function dydt = diseaseDynamics(t, y, mu, alpha_hat, k_theta, gamma, sigma,beta,v)
+    S = y(1);
+    I = y(2);
+    p = y(3);
+    p_3 = 0.90;    
+    % Define c(t) with sigma
+    c_t = (1 - sigma) * sin(2*pi*t/365) + 1 + sigma;
+
+    % System of equations
+    dSdt = mu * (1 - p) - c_t * beta * S * I - mu * S;
+    dIdt = c_t * beta * S * I - (mu + v) * I;
+    dpdt = k_theta*(1-p) * ((I - alpha_hat*p)*p + gamma);
+    
+    dydt = [dSdt; dIdt; dpdt];
+end

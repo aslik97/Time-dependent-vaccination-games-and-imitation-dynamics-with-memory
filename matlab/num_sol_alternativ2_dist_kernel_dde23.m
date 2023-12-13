@@ -9,7 +9,7 @@ for j = 1:length(lags)
  R0= 10;
  mu = 3.9 * 10^(-5);
  v = 1/7;
- %history = [initial_S; initial_I; initial_p];
+ 
 
  %options = ddeset('RelTol',1e-6,'AbsTol',1e-8);
 solution = dde23(@(t,x,Z) rhs_dde23(t,x,Z,tau),tau,@dde23history, [0,4000]);
@@ -46,7 +46,7 @@ function x_h = dde23history(t)
     %p=1-(1/R0)-((mu+v)/mu)*I;
     %S=0.07;
     %I=1-S;
-    p=0.8;
+    p=0.75;
     %p=0;
     %I = mu * (1 - 1/R0) / (mu + v);
     %S = 1-p;
