@@ -51,7 +51,7 @@ function dydt = dynamics(t, y, mu, v, beta,theta,k)
     S = y(1); % Susceptible population
     I = y(2); % Infected population
     p = y(3); % Perception, which is equivalent to p_3 but dynamic
-    sigma=0.9;
+    sigma=0.1;
       c_t = (1 - sigma) * sin(2*pi*t/365) + 1 + sigma;
     % Calculate the derivatives
     dSdt = mu * (1 - p) - mu * S - beta * S * I *c_t ;

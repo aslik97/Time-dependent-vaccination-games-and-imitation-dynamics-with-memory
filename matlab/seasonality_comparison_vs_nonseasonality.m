@@ -1,5 +1,4 @@
 
-
 % Define parameters
 gamma = 1.41e-4;
 sigma = 0.9; % Different sigma values for comparison
@@ -22,7 +21,8 @@ p0 = 0.95;
 tspan = [0, 365*11];
 
 % Simulation and Plotting
-    [T, Z] = ode45(@(t, y) diseaseDynamics(t, y, mu, alpha_hat, k_theta, gamma, sigma,beta,v), tspan, [S0 I0 p0]);
+    [T, Z] = ode45(@(t, y) seasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma, sigma,beta,v), tspan, [S0 I0 p0]);
+    [K,M] = ode45(@(t, y) nonseasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma, sigma,beta,v), tspan, [S0 I0 p0]);
     
 % Plots
 figure;
@@ -31,13 +31,18 @@ plot(T/365, R_0*Z(:,1)); % R_E(t) = R_0*S(t)
 title('R_E(t) vs t');
 xlabel('time');
 ylabel('R_E(t)');
+hold on;
+plot(K/365, R_0*M(:,1)); % R_E(t) = R_0*S(t)
+legend('with seasonality', 'without seasonality');
 
 subplot(1,2,2);
 plot(T/365, Z(:,2));
 title('I(t) vs t');
 xlabel('time');
 ylabel('I(t)');
-
+hold on;
+plot(K/365, R_0*M(:,2)); % R_E(t) = R_0*S(t)
+legend('with seasonality', 'without seasonality');
 %subplot(1,3,3);
 %plot(T/365, Y(:,3));
 %title('p(t) vs t');
@@ -48,7 +53,7 @@ ylabel('I(t)');
 %legend('p(t)', 'p_c');
 
 % Differential equations function
-function dydt = diseaseDynamics(t, y, mu, alpha_hat, k_theta, gamma_hat, sigma, beta, v)
+function dydt = seasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma_hat, sigma, beta, v)
     S = y(1);
     I = y(2);
     p = y(3);
@@ -63,6 +68,24 @@ function dydt = diseaseDynamics(t, y, mu, alpha_hat, k_theta, gamma_hat, sigma, 
     % System of equations
     dSdt = mu * (1 - p_3) - c_t * beta * S * I - mu * S;
     dIdt = c_t * beta * S * I - (mu + v) * I;
+    dpdt = k_theta*(1-p_3) * ((I - alpha_hat*p_3)*p_3 + gamma_hat);
+    
+    dydt = [dSdt; dIdt; dpdt];
+end
+
+function dydt = nonseasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma_hat, sigma, beta, v)
+    S = y(1);
+    I = y(2);
+    p = y(3);
+    p_3 = 0.90;    
+    % Define c(t) with sigma
+    
+    T = 365;        % The period of the function, one year
+    C = 0;          % Phase shift (in days)
+    
+    % System of equations
+    dSdt = mu * (1 - p_3) - beta * S * I - mu * S;
+    dIdt = beta * S * I - (mu + v) * I;
     dpdt = k_theta*(1-p_3) * ((I - alpha_hat*p_3)*p_3 + gamma_hat);
     
     dydt = [dSdt; dIdt; dpdt];
