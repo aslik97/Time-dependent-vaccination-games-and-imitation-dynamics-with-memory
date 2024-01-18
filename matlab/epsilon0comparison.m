@@ -3,7 +3,7 @@ clear all
 % Define parameters
 gamma = 1.41e-4;
 
-mu = 1/(11*365);   % Birth and death rate (1/L, where L is life expectancy)
+mu = 1/(11*365);          % Birth and death rate (1/L, where L is life expectancy)
 v = 1/7;           % Rate of recovery from infection
 R_0 = 15;          % Basic Reproduction Number
 beta = R_0*(mu+v); % Transmission rate
@@ -24,35 +24,27 @@ tspan = [0, 365*11];
 for i = 1:length(epsilon_values)
     epsilon = epsilon_values(i);
 % Simulation and Plotting
-    [T, Z] = ode45(@(t, y) seasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma,beta,v,epsilon), tspan, [S0 I0 p0]);
-    [K,M] = ode45(@(k, m) nonseasonalityDynamics(k, m, mu, alpha_hat, k_theta, gamma,beta,v), tspan, [S0 I0 p0]);
+    %[T, Z] = ode45(@(t, y) seasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma,beta,v,epsilon), tspan, [S0 I0 p0]);
+    %[K,M] = ode45(@(k, m) nonseasonalityDynamics(k, m, mu, alpha_hat, k_theta, gamma,beta,v), tspan, [S0 I0 p0]);
+     
+    % Assuming epsilon = 0 for this run
+[T, Z] = ode45(@(t, y) seasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma_hat, beta, v, 0), tspan, [S0 I0 p0]);
+[K, M] = ode45(@(k, m) nonseasonalityDynamics(k, m, mu, alpha_hat, k_theta, gamma_hat, beta, v), tspan, [S0 I0 p0]);
 
-    if epsilon == 0
-        disp(['Max difference in R_E(t) when epsilon is ', num2str(epsilon), ': ', num2str(max(abs(R_0*Z(:,1) - R_0*M(:,1))))]);
-        disp(['Max difference in I(t) when epsilon is ', num2str(epsilon), ': ', num2str(max(abs(Z(:,2) - M(:,2))))]);
-    end
-     % Subplot for R_E(t)
-    subplot(4, 2, i * 2 - 1);
-    plot(T/365, R_0*Z(:,1));
-    title(['R_E(t) vs t for \epsilon = ', num2str(epsilon)]);
-    xlabel('Time (years)');
-    ylabel('R_E(t)');
-    hold on;
-    plot(K/365, R_0*M(:,1)); % R_E(t) = R_0*S(t)
-    legend('with seasonality', 'without seasonality');
+% Calculate and display the maximum difference for the first state variable
+max_diff = max(abs(Z(:,1) - M(:,1)));
+disp(['Maximum difference in the first state variable: ', num2str(max_diff)]);
 
-    
-    % Subplot for I(t)
-    subplot(4, 2, i * 2);
-    plot(T/365, Z(:,2));
-    title(['I(t) vs t for \epsilon = ', num2str(epsilon)]);
-    xlabel('Time (years)');
-    ylabel('I(t)');
-    hold on;
-    plot(K/365, R_0*M(:,2)); % R_E(t) = R_0*S(t)
-    legend('with seasonality', 'without seasonality');
+% Plotting for visual comparison
 
+figure;
+plot(T/365, Z(:,1), 'b', K/365, M(:,1), 'r--');
+title('R_E(t) vs t for \epsilon = 0');
+xlabel('Time (years)');
+ylabel('R_E(t)');
+legend('With Seasonality (epsilon = 0)', 'Without Seasonality');
 
+  
 end
 % Seasonality Dynamics
 function dydt = seasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma_hat, beta, v, epsilon)
@@ -65,9 +57,7 @@ function dydt = seasonalityDynamics(t, y, mu, alpha_hat, k_theta, gamma_hat, bet
  C = 0; 
 
     c_t = epsilon * sin((2*pi/T)*(t -C)) + 1; % Should be 1 when epsilon = 0
-    if(epsilon == 0)
-    disp(c_t);
-    end
+    
     dSdt = mu * (1 - p_3) - c_t * beta * S * I - mu * S;
     dIdt = c_t * beta * S * I - (mu + v) * I;
     dpdt = k_theta * (1 - p_3) * ((I - alpha_hat * p_3) * p_3 + gamma_hat);
